@@ -1,0 +1,165 @@
+<html>
+  <head>
+    <title>IP Network Address Calc</title>
+    <script>
+      var mask = 0
+      var mask_bytes = [0,0,0,0]
+      var mask_bits = 0
+      var ip_addr_bytes = [0,0,0,0]
+      var ip_addr = 0
+      var network_bytes = [0,0,0,0]
+      var first_addr_bytes = [0,0,0,0]
+      var last_addr_bytes = [255,255,255,254]
+      var broadcast_bytes =[255,255,255,255]
+      
+      function mask_to_bits() {
+        shifted_mask = mask
+        mask_bits = 0
+        for(var i = 0; i < 32; i++) {
+          if((shifted_mask&0x1) == 1) {
+            mask_bits += 1
+          } else if (mask_bits != 0) {
+            // got a 0 in the middle of the mask
+            return false
+          }
+          shifted_mask = shifted_mask >> 1
+        }
+        return true
+      }
+      
+      function mask_s_to_mask(s) {
+        var mask_s_a = s.split('.')
+        if (mask_s_a.length == 1) {
+          bits_s_to_mask(mask_s_a[0])
+        } else if (mask_s_a.length == 4) {
+          addr_s_to_i(mask_s_a, mask_bytes)
+          mask = (mask_bytes[0] << 24) + (mask_bytes[1] << 16) + (mask_bytes[2] << 8) + mask_bytes[3]
+          if(! mask_to_bits()) {
+            alert( "Bad mask (found 0 in top end) " + s)
+            return false
+          }
+        } else {
+          alert( "Bad mask " + s)
+          return false
+        }
+        return true
+      }
+      
+      function addr_to_a(addr, arr) {
+        arr[0] = (addr >> 24) & 255
+        arr[1] = (addr >> 16) & 255
+        arr[2] = (addr >> 8) & 255
+        arr[3] = addr & 255
+      }
+      
+      function addr_s_to_i(addr_s_a, addr_i_a) {
+        for(i in addr_s_a) {
+          addr_i_a[i] = parseInt(addr_s_a[i])
+        }
+      }
+
+      function bits_s_to_mask(bits_s) {
+        mask_bits = parseInt(bits_s)
+        mask = (0xFFFFFFFF << (32 - mask_bits)) >>> 0
+        addr_to_a(mask, mask_bytes)
+      }
+      
+      function addr_s_to_a(s) {
+        var addr_a = s.split('.')
+        if(addr_a.length == 4) {
+          addr_s_to_i(addr_a, ip_addr_bytes)
+          ip_addr = (ip_addr_bytes[0] << 24) + (ip_addr_bytes[1] << 16) + (ip_addr_bytes[2] << 8) + ip_addr_bytes[3]
+          return true
+        } else {
+          alert("Bad Address " + s)
+          return false
+        }
+      }
+      
+      
+      function addr_to_s(addr) {
+        return addr[0].toString() + '.' + addr[1].toString() + '.' + addr[2].toString() + '.' + addr[3].toString()
+      }
+      
+      function set_result_fields() {
+        var form_network = document.getElementById("network");
+        var form_mask = document.getElementById("mask");
+        var form_bits = document.getElementById("bits");
+        var form_first_addr = document.getElementById("first_addr");
+        var form_last_addr = document.getElementById("last_addr");
+        var form_broadcast = document.getElementById("broadcast");
+        
+        form_network.value = addr_to_s(network_bytes)
+        form_mask.value = addr_to_s(mask_bytes)
+        form_bits.value = mask_bits.toString()
+        form_first_addr.value = addr_to_s(first_addr_bytes)
+        form_last_addr.value = addr_to_s(last_addr_bytes)
+        form_broadcast.value = addr_to_s(broadcast_bytes)
+      }
+      
+      function calc_result() {
+        var network_addr = (ip_addr & mask)
+        var broadcast_addr = ((~network & ~mask & 0xFFFFFFFF) | network_addr)
+        var first_addr = network_addr + 1
+        var last_addr =  broadcast_addr - 1
+        addr_to_a(network_addr, network_bytes)
+        addr_to_a(first_addr, first_addr_bytes)
+        addr_to_a(last_addr, last_addr_bytes)
+        addr_to_a(broadcast_addr, broadcast_bytes)
+      }
+      
+      function reset_result() {
+        mask = 0
+        mask_bytes = [0,0,0,0]
+        mask_bits = 0
+        network_bytes =[0,0,0,0]
+        first_addr_bytes = [0,0,0,0]
+        last_addr_bytes = [255,255,255,254]
+        broadcast_bytes =[255,255,255,255]
+      }
+      
+      function subnet_calc() {
+        var form_ip_addr = document.getElementById("ip_addr");
+        var form_mask_or_bits = document.getElementById("mask_or_bits");
+        
+        if(mask_s_to_mask(form_mask_or_bits.value)) {
+          if(addr_s_to_a(form_ip_addr.value)) {
+            calc_result()
+          } else {
+            reset_result()
+          }
+        } else {
+          reset_result()
+        }
+        set_result_fields()
+      }
+      
+      function init() {
+        reset_result()
+        set_result_fields()
+      }
+    </script>
+  </head>
+  <body onload="init();">
+    <h2>Subnet Calculator</h2>
+    
+    Calculate Subnet start/end fr
+    
+    <table>
+      <tr>
+        <td>IP Addr</td> <td><input type="text" id='ip_addr'></td>
+        <td>Mask or Bits</td> <td><input type="text" id='mask_or_bits'></td>
+        td>&nbsp</td> <td><input type="button" id='' onclick="subnet_calc(); return false;" value="Calculate"></td>
+      </tr>
+      <tr>
+        <td>Network</td> <td><input type="text" id='network' readonly></td>
+        <td>Mask</td> <td><input type="text" id='mask' readonly></td>
+        <td>Bits</td> <td><input type="text" id='bits' readonly></td>
+      </tr> 
+        <td>First Addr</td> <td><input type="text" id='first_addr' readonly></td>
+        <td>Last Addr</td> <td><input type="text" id='last_addr' readonly></td>
+        <td>broadcast</td> <td><input type="text" id='broadcast' readonly></td>
+      </tr>
+    </table>
+  </body>
+</html>
