@@ -12,7 +12,7 @@
       var first_addr_bytes = [0,0,0,0]
       var last_addr_bytes = [255,255,255,254]
       var broadcast_bytes =[255,255,255,255]
-      
+
       function mask_to_bits() {
         shifted_mask = mask
         mask_bits = 0
@@ -27,7 +27,7 @@
         }
         return true
       }
-      
+
       function mask_s_to_mask(s) {
         var mask_s_a = s.split('.')
         if (mask_s_a.length == 1) {
@@ -45,14 +45,14 @@
         }
         return true
       }
-      
+
       function addr_to_a(addr, arr) {
         arr[0] = (addr >> 24) & 255
         arr[1] = (addr >> 16) & 255
         arr[2] = (addr >> 8) & 255
         arr[3] = addr & 255
       }
-      
+
       function addr_s_to_i(addr_s_a, addr_i_a) {
         for(i in addr_s_a) {
           addr_i_a[i] = parseInt(addr_s_a[i])
@@ -64,7 +64,7 @@
         mask = (0xFFFFFFFF << (32 - mask_bits)) >>> 0
         addr_to_a(mask, mask_bytes)
       }
-      
+
       function addr_s_to_a(s) {
         var addr_a = s.split('.')
         if(addr_a.length == 4) {
@@ -76,12 +76,12 @@
           return false
         }
       }
-      
-      
+
+
       function addr_to_s(addr) {
         return addr[0].toString() + '.' + addr[1].toString() + '.' + addr[2].toString() + '.' + addr[3].toString()
       }
-      
+
       function set_result_fields() {
         var form_network = document.getElementById("network");
         var form_mask = document.getElementById("mask");
@@ -89,7 +89,7 @@
         var form_first_addr = document.getElementById("first_addr");
         var form_last_addr = document.getElementById("last_addr");
         var form_broadcast = document.getElementById("broadcast");
-        
+
         form_network.value = addr_to_s(network_bytes)
         form_mask.value = addr_to_s(mask_bytes)
         form_bits.value = mask_bits.toString()
@@ -97,7 +97,7 @@
         form_last_addr.value = addr_to_s(last_addr_bytes)
         form_broadcast.value = addr_to_s(broadcast_bytes)
       }
-      
+
       function calc_result() {
         var network_addr = (ip_addr & mask)
         var broadcast_addr = ((~network & ~mask & 0xFFFFFFFF) | network_addr)
@@ -108,7 +108,7 @@
         addr_to_a(last_addr, last_addr_bytes)
         addr_to_a(broadcast_addr, broadcast_bytes)
       }
-      
+
       function reset_result() {
         mask = 0
         mask_bytes = [0,0,0,0]
@@ -118,11 +118,11 @@
         last_addr_bytes = [255,255,255,254]
         broadcast_bytes =[255,255,255,255]
       }
-      
+
       function subnet_calc() {
         var form_ip_addr = document.getElementById("ip_addr");
         var form_mask_or_bits = document.getElementById("mask_or_bits");
-        
+
         if(mask_s_to_mask(form_mask_or_bits.value)) {
           if(addr_s_to_a(form_ip_addr.value)) {
             calc_result()
@@ -134,7 +134,7 @@
         }
         set_result_fields()
       }
-      
+
       function init() {
         reset_result()
         set_result_fields()
@@ -143,24 +143,26 @@
   </head>
   <body onload="init();">
     <h2>Subnet Calculator</h2>
-    
-    Calculate Subnet start/end fr
-    
-    <table>
-      <tr>
-        <td>IP Addr</td> <td><input type="text" id='ip_addr'></td>
-        <td>Mask or Bits</td> <td><input type="text" id='mask_or_bits'></td>
-        td>&nbsp</td> <td><input type="button" id='' onclick="subnet_calc(); return false;" value="Calculate"></td>
-      </tr>
-      <tr>
-        <td>Network</td> <td><input type="text" id='network' readonly></td>
-        <td>Mask</td> <td><input type="text" id='mask' readonly></td>
-        <td>Bits</td> <td><input type="text" id='bits' readonly></td>
-      </tr> 
-        <td>First Addr</td> <td><input type="text" id='first_addr' readonly></td>
-        <td>Last Addr</td> <td><input type="text" id='last_addr' readonly></td>
-        <td>broadcast</td> <td><input type="text" id='broadcast' readonly></td>
-      </tr>
-    </table>
+
+    Calculate Subnet start/end, given an IP address and Mask.<br>
+    The mask can be in dot notation or the number of bits. e.g. 255.255.255.0 or 24 <br>
+    <form onsubmit='subnet_calc(); return false;'>
+      <table>
+        <tr>
+          <td>IP Addr</td> <td><input type="text" id='ip_addr'></td>
+          <td>Mask or Bits</td> <td><input type="text" id='mask_or_bits'></td>
+          <td>&nbsp</td> <td><input type="submit" id='' onclick="subnet_calc(); return false;" value="Calculate"></td>
+        </tr>
+        <tr>
+          <td>Network</td> <td><input type="text" id='network' readonly></td>
+          <td>Mask</td> <td><input type="text" id='mask' readonly></td>
+          <td>Bits</td> <td><input type="text" id='bits' readonly></td>
+        </tr>
+          <td>First Addr</td> <td><input type="text" id='first_addr' readonly></td>
+          <td>Last Addr</td> <td><input type="text" id='last_addr' readonly></td>
+          <td>broadcast</td> <td><input type="text" id='broadcast' readonly></td>
+        </tr>
+      </table>
+    </form>
   </body>
 </html>
